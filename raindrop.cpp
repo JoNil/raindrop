@@ -130,7 +130,21 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
-    }
+	}
+
+	if (key == GLFW_KEY_UP && action == GLFW_PRESS){
+		std::cout << "up\n";
+		//position += direction * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS){
+		//position -= direction * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS){
+		//position += right * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS){
+		//position -= right * deltaTime * speed;
+	}
 }
 
 uint32_t load_background(const char * path)
