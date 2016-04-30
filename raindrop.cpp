@@ -188,7 +188,7 @@ int main(int argc, char ** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //create GLFW window and select context
-    GLFWwindow* window = glfwCreateWindow(640, 480, "TNM084", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(640, 480, "raindrop", NULL, NULL);
     if (!window) {
         fprintf(stderr, "ERROR: could not open window with GLFW3\n");
         glfwTerminate();
@@ -289,12 +289,12 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
 
-        //GL(glUseProgram(background_shader.programID));
-        //GL(glBindTexture(GL_TEXTURE_2D, background_tex));
-        //GL(glActiveTexture(GL_TEXTURE0));
-        //GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
-        //GL(glBindVertexArray(QUAD_VAO));
-        //GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+        GL(glUseProgram(background_shader.programID));
+        GL(glBindTexture(GL_TEXTURE_2D, background_tex));
+        GL(glActiveTexture(GL_TEXTURE0));
+        GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
+        GL(glBindVertexArray(QUAD_VAO));
+        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
