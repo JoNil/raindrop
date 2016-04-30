@@ -232,7 +232,7 @@ int main(int argc, char ** argv)
     GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     int status = 0;
-    load_background("background.jpg");
+    uint32_t background_tex = load_background("background.jpg");
 
     float oldTime = 0;
     float newTime = glfwGetTime();
@@ -254,7 +254,7 @@ int main(int argc, char ** argv)
     GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
     
     Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
-    Shader backgroundShader("shader/background.vert", "shader/background.frag");
+    Shader background_shader("shader/background.vert", "shader/background.frag");
 
     GLuint QUAD_VAO;
     GLuint QUAD_VERT_VBO;
@@ -289,7 +289,10 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleTexs.data(), (int)particles.size());
 
-        GL(glUseProgram(backgroundShader.programID));
+        GL(glUseProgram(background_shader.programID));
+        GL(glBindTexture(GL_TEXTURE_2D, background_tex));
+        GL(glActiveTexture(GL_TEXTURE0));
+        GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
         GL(glBindVertexArray(QUAD_VAO));
         GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
