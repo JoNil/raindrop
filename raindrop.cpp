@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 
+#include "common/Shader.h"
+
 #include <cstdio>
 #include <iostream>
 #include <cstdlib>
@@ -26,65 +28,6 @@ void check_gl_error(const char * stmt, const char * fname, int line)
     stmt; \
     check_gl_error(#stmt, __FILE__, __LINE__); \
 } while (0)
-
-#define GLSL(version, shader) "#version " #version "\n" #shader
-
-const char * vertex_shader_source = GLSL(130,
-
-attribute vec3 vertex_pos;
-attribute vec2 vertex_tex;
-
-varying vec3 pos;
-varying vec2 tex;
-
-void main() {
-    pos = vertex_pos;
-    tex = vertex_tex;
-    gl_Position = vec4(vertex_pos, 1.0);
-});
-
-//const char * geometry_shader_source = GLSL(330,
-//	
-//
-//	varying vec3 pos;
-//
-//void main()
-//{
-//	gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
-//});
-
-const char * fragment_shader_source = GLSL(130,
-
-varying vec3 pos;
-varying vec2 tex;
-
-void main()
-{
-    vec3 color = vec3(191.0/255.0, 0.0, 1.0);
-
-    vec2 local = (tex - 0.5) * 2.0;
-
-    float r = sqrt(local.x*local.x + local.y*local.y);
-	r = clamp(r, 0.0, 1.0);
-	float alpha = 1.5;
-	alpha*= pow(1.0 - r, 2.0);
-
-    gl_FragColor = vec4(color, alpha);
-});
-
-static void print_shader_compile_error(uint32_t shader)
-{
-    std::string infolog;
-
-    int length = 0;
-    GL(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length));
-
-    infolog.resize((size_t)length);
-
-    GL(glGetShaderInfoLog(shader, length, nullptr, &infolog[0]));
-
-    printf("%s\n", infolog.c_str());
-}
 
 struct Particle {
 	vec2 pos;
@@ -195,64 +138,32 @@ int main(int argc, char ** argv)
 	GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     int status = 0;
-    uint32_t vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	//uint32_t geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
-    uint32_t fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    GL(glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr));
-    GL(glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr));
 
-    GL(glCompileShader(vertex_shader));
-    GL(glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status));
-    if (status == GL_FALSE) {
-        printf("Vertex shader error:\n");
-        print_shader_compile_error(vertex_shader);
-        exit(1);
-    }
+    float oldTime = 0;
+    float newTime = glfwGetTime();
 
-    GL(glCompileShader(fragment_shader));
-    GL(glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status));
-    if (status == GL_FALSE) {
-        printf("Fragment shader error:\n");
-        print_shader_compile_error(fragment_shader);
-        exit(1);
-    }
-
-    uint32_t shader_program = glCreateProgram();
-    GL(glAttachShader(shader_program, vertex_shader));
-    GL(glAttachShader(shader_program, fragment_shader));
-    GL(glLinkProgram(shader_program));
-
-    GL(glValidateProgram(shader_program));
-    GL(glGetProgramiv(shader_program, GL_VALIDATE_STATUS, &status));
-    if (status == GL_FALSE) {
-        printf("Link error\n");
-        print_shader_compile_error(shader_program);
-        exit(1);
-    }
-
-    GL(glUseProgram(shader_program));
-
-	float oldTime = 0;
-	float newTime = glfwGetTime();
-
-	GLuint POS_VBO;
+    GLuint POS_VBO;
     GLuint TEX_VBO;
-	std::vector<GLfloat> particleVertices(numParticles * 12);
+    std::vector<GLfloat> particleVertices(numParticles * 12);
     std::vector<GLfloat> particleTexs(numParticles * 8);
-	GL(glGenBuffers(1, &POS_VBO));
+    GL(glGenBuffers(1, &POS_VBO));
     GL(glGenBuffers(1, &TEX_VBO));
     GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
-	GL(glEnableVertexAttribArray(0));
-	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0));
+    GL(glEnableVertexAttribArray(0));
+    GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0));
     GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
     GL(glEnableVertexAttribArray(1));
     GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+    
+    Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
+    
+    GL(glUseProgram(shader.programID));
 
     while (!glfwWindowShouldClose(window)) {
 
-		oldTime = newTime;
-		newTime = glfwGetTime();
-		float deltaTime = newTime - oldTime;
+        oldTime = newTime;
+	newTime = glfwGetTime();
+	float deltaTime = newTime - oldTime;
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -263,11 +174,11 @@ int main(int argc, char ** argv)
         }
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
-		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
+	GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
 
-		GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
+	GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
