@@ -219,8 +219,7 @@ int main(int argc, char ** argv)
     GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     int status = 0;
-
-    //load_background("background.jpg");
+    load_background("background.jpg");
 
     float oldTime = 0;
     float newTime = glfwGetTime();
