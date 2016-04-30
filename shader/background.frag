@@ -1,6 +1,6 @@
-#version 130
+#version 330 core
 
-varying vec2 fragment_uv;
+in vec2 fragment_uv;
 
 uniform sampler2D tex;
 

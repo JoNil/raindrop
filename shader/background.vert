@@ -1,7 +1,7 @@
-#version 130
+#version 330 core
 
-attribute vec3 vertex_pos;
-attribute vec2 vertex_uv;
+in vec3 vertex_pos;
+in vec2 vertex_uv;
 
 varying vec2 fragment_uv;
 
