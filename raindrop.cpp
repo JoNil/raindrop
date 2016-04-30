@@ -206,16 +206,10 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-	const int numParticles = 30;
+	const int numParticles = 50;
     std::vector<Particle> particles(numParticles);
 
     for (int i = 0; i < (int)particles.size(); ++i) {
-		//particles[i].pos.x = 0;
-		//particles[i].pos.y = (float)(std::rand() % 2000 - 500) / 1000.0f;// -0.5;
-
-		//particles[i].pos.x = i*0.2 - 1;
-		//particles[i].pos.y = 0;
-
 		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
 		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
     }
