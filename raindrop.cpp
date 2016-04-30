@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <cstdio>
 #include <iostream>
 #include <cstdlib>
@@ -130,6 +133,35 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
+uint32_t load_background(const char * path)
+{
+    uint32_t tex_id = 0;
+
+    int32_t width = 0;
+    int32_t height = 0;
+    int32_t comp = 0;
+    uint8_t * image = stbi_load(path, &width, &height, &comp, STBI_rgb);
+
+    if (image == nullptr) {
+        exit(1);
+    }
+
+    glGenTextures(1, &tex_id);
+
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (comp == 3) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    } else if(comp == 4) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    }
+
+    return tex_id;
+}
+
 void simulate_particles(Particle * particles, int particle_count, float dt)
 {
     for (int i = 0; i < particle_count; ++i) {
@@ -231,6 +263,8 @@ int main(int argc, char ** argv)
     }
 
     GL(glUseProgram(shader_program));
+
+    load_background("background.jpg");
 
 	float oldTime = 0;
 	float newTime = glfwGetTime();
