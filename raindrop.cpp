@@ -204,6 +204,26 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
     }
 }
 
+static float quad_vertices[] = {
+    -1.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+
+    -1.0f, 1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+};
+
+static float quad_uvs[] = {
+    0.0f, 1.0f,
+    1.0f, 1.0f,
+    1.0f, 0.0f,
+
+    0.0f, 1.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f,
+};
+
 int main(int argc, char ** argv)
 {
     int width = 720;
@@ -283,10 +303,13 @@ int main(int argc, char ** argv)
 	float oldTime = 0;
 	float newTime = glfwGetTime();
 
+    GLuint VAO;
 	GLuint POS_VBO;
     GLuint TEX_VBO;
 	std::vector<GLfloat> particleVertices(numParticles * 12);
     std::vector<GLfloat> particleTexs(numParticles * 8);
+    GL(glGenVertexArrays(1, &VAO));
+    GL(glBindVertexArray(VAO));
 	GL(glGenBuffers(1, &POS_VBO));
     GL(glGenBuffers(1, &TEX_VBO));
     GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
@@ -295,6 +318,23 @@ int main(int argc, char ** argv)
     GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
     GL(glEnableVertexAttribArray(1));
     GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+
+    GLuint QUAD_VAO;
+    GLuint QUAD_VERT_VBO;
+    GLuint QUAD_UV_VBO;
+    GL(glGenVertexArrays(1, &QUAD_VAO));
+    GL(glBindVertexArray(QUAD_VAO));
+    GL(glGenBuffers(1, &QUAD_VERT_VBO));
+    GL(glGenBuffers(1, &QUAD_UV_VBO));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, QUAD_VERT_VBO));
+    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices) * 4, quad_vertices, GL_STATIC_DRAW));
+    GL(glEnableVertexAttribArray(0));
+    GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, QUAD_UV_VBO));
+    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uvs) * 4, quad_uvs, GL_STATIC_DRAW));
+    GL(glEnableVertexAttribArray(1));
+    GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -310,11 +350,15 @@ int main(int argc, char ** argv)
             updateParticles(particles[i], particleVertices.data(), particleTexs.data(), i);	
         }
 
+        GL(glBindVertexArray(QUAD_VAO));
+        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
 
+        GL(glBindVertexArray(VAO));
 		GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
 
         glfwSwapBuffers(window);
