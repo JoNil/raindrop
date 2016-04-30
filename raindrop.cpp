@@ -4,6 +4,9 @@
 
 #include "common/Shader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <cstdio>
 #include <iostream>
 #include <cstdlib>
@@ -70,7 +73,50 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	if (key == GLFW_KEY_UP && action == GLFW_PRESS){
+		std::cout << "up\n";
+		//position += direction * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS){
+		//position -= direction * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS){
+		//position += right * deltaTime * speed;
+	}
+	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS){
+		//position -= right * deltaTime * speed;
+	}
+}
+
+uint32_t load_background(const char * path)
+{
+    uint32_t tex_id = 0;
+
+    int32_t width = 0;
+    int32_t height = 0;
+    int32_t comp = 0;
+    uint8_t * image = stbi_load(path, &width, &height, &comp, STBI_rgb);
+
+    if (image == nullptr) {
+        exit(1);
     }
+
+    glGenTextures(1, &tex_id);
+
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (comp == 3) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    } else if(comp == 4) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    }
+
+    return tex_id;
 }
 
 void simulate_particles(Particle * particles, int particle_count, float dt)
@@ -100,6 +146,26 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
         particles[i].pos += particles[i].speed * dt;		
     }
 }
+
+static float quad_vertices[] = {
+    -1.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+
+    -1.0f, 1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+};
+
+static float quad_uvs[] = {
+    0.0f, 1.0f,
+    1.0f, 1.0f,
+    1.0f, 0.0f,
+
+    0.0f, 1.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f,
+};
 
 int main(int argc, char ** argv)
 {
@@ -134,8 +200,8 @@ int main(int argc, char ** argv)
     GL(glViewport(0, 0, width, height));
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
     GL(glDisable(GL_DEPTH_TEST));
-	GL(glEnable(GL_BLEND));
-	GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GL(glEnable(GL_BLEND));
+    GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     int status = 0;
 
@@ -143,9 +209,22 @@ int main(int argc, char ** argv)
     float newTime = glfwGetTime();
 
     GLuint POS_VBO;
+
+    GL(glUseProgram(shader_program));
+
+    load_background("background.jpg");
+
+    float oldTime = 0;
+    float newTime = glfwGetTime();
+
+    GLuint VAO;
+    GLuint POS_VBO;
     GLuint TEX_VBO;
     std::vector<GLfloat> particleVertices(numParticles * 12);
     std::vector<GLfloat> particleTexs(numParticles * 8);
+    GL(glGenBuffers(1, &POS_VBO));
+    GL(glGenVertexArrays(1, &VAO));
+    GL(glBindVertexArray(VAO));
     GL(glGenBuffers(1, &POS_VBO));
     GL(glGenBuffers(1, &TEX_VBO));
     GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
@@ -158,6 +237,23 @@ int main(int argc, char ** argv)
     Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
     
     GL(glUseProgram(shader.programID));
+
+    GLuint QUAD_VAO;
+    GLuint QUAD_VERT_VBO;
+    GLuint QUAD_UV_VBO;
+    GL(glGenVertexArrays(1, &QUAD_VAO));
+    GL(glBindVertexArray(QUAD_VAO));
+    GL(glGenBuffers(1, &QUAD_VERT_VBO));
+    GL(glGenBuffers(1, &QUAD_UV_VBO));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, QUAD_VERT_VBO));
+    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices) * 4, quad_vertices, GL_STATIC_DRAW));
+    GL(glEnableVertexAttribArray(0));
+    GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, QUAD_UV_VBO));
+    GL(glBufferData(GL_ARRAY_BUFFER, sizeof(quad_uvs) * 4, quad_uvs, GL_STATIC_DRAW));
+    GL(glEnableVertexAttribArray(1));
+    GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -173,12 +269,18 @@ int main(int argc, char ** argv)
             updateParticles(particles[i], particleVertices.data(), particleTexs.data(), i);	
         }
 
+        GL(glBindVertexArray(QUAD_VAO));
+        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 	GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
 
 	GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
+
+        GL(glBindVertexArray(VAO));
+        GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
 
         glfwSwapBuffers(window);
         glfwPollEvents();

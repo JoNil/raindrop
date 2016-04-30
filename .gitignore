@@ -36,3 +36,9 @@ ui_*.h
 
 # QtCtreator CMake
 CMakeLists.txt.user
+
+raindrop.config
+raindrop.creator
+raindrop.creator.user
+raindrop.files
+raindrop.includes
