@@ -24,7 +24,7 @@ void check_gl_error(const char * stmt, const char * fname, int line)
     GLenum err = glGetError();
     if (err != GL_NO_ERROR)
     {
-        printf("OpenGL error %08x, at %s:%i - for %s\n", err, fname, line, stmt);
+        //printf("OpenGL error %08x, at %s:%i - for %s\n", err, fname, line, stmt);
         //abort();
     }
 }
@@ -289,21 +289,21 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
 
-        GL(glUseProgram(background_shader.programID));
-        GL(glBindTexture(GL_TEXTURE_2D, background_tex));
-        GL(glActiveTexture(GL_TEXTURE0));
-        GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
-        GL(glBindVertexArray(QUAD_VAO));
-        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+        //GL(glUseProgram(background_shader.programID));
+        //GL(glBindTexture(GL_TEXTURE_2D, background_tex));
+        //GL(glActiveTexture(GL_TEXTURE0));
+        //GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
+        //GL(glBindVertexArray(QUAD_VAO));
+        //GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleSize.size() * 4, particleSize.data(), GL_STATIC_DRAW));
 
-        GL(glUseProgram(shader.programID));
+        GL(glUseProgram(raindropShader.programID));
         GL(glBindVertexArray(VAO));
-		GL(glDrawArrays(GL_TRIANGLES, 0, (numParticles+1)*4));
+		GL(glDrawArrays(GL_POINTS, 0, numParticles));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
