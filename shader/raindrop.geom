@@ -2,7 +2,7 @@
 
 layout(points) in;
 layout(triangle_strip) out;
-layout(max_vertices = 70) out;
+layout(max_vertices = 60) out;
 
 in float pSize[];
 
@@ -12,7 +12,7 @@ void main() {
     
     float angle;
     
-    for (int i = 0; i <= 20; ++i) {
+    for (int i = 0; i < 20; ++i) {
         gl_Position = gl_in[0].gl_Position;
         EmitVertex();
         
