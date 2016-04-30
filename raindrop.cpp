@@ -17,6 +17,8 @@
 
 using namespace glm;
 
+void setupViewport(GLFWwindow *window, GLfloat *P);
+
 void check_gl_error(const char * stmt, const char * fname, int line)
 {
     GLenum err = glGetError();
@@ -187,28 +189,48 @@ static float quad_uvs[] = {
 
 int main(int argc, char ** argv)
 {
+    GLfloat P[16] = { 2.42f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 2.42f, 0.0f, 0.0f,
+                    0.0f, 0.0f, -1.0f, -1.0f,
+                    0.0f, 0.0f, -0.2f, 0.0f };
+
     int width = 720;
     int height = 720;
 
     std::srand(std::time(0));
 
-    glfwInit();
+   //GL INITIALIZATION \___________________________________________
+    // start GLEW extension handler
+    if (!glfwInit()) {
+            fprintf(stderr, "ERROR: could not start GLFW3\n");
+            return 1;
+    }
 
-    GLFWwindow * window = glfwCreateWindow(width, height, "Friday particle", NULL, NULL);
-	glfwSwapInterval(1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR , 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwSetKeyCallback(window, key_callback);
-
+    //create GLFW window and select context
+    GLFWwindow* window = glfwCreateWindow(640, 480, "TNM084", NULL, NULL);
+    if (!window) {
+        fprintf(stderr, "ERROR: could not open window with GLFW3\n");
+        glfwTerminate();
+        return 1;
+    }
     glfwMakeContextCurrent(window);
-	
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "Failed to initialize GLEW" << std::endl;
-		return -1;
-	}
 
-	//initialize particle system
-	const int numParticles = 50;
+    //start GLEW extension handler
+    glewExperimental = GL_TRUE;
+    glewInit();
+
+    // get version info
+    const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
+    const GLubyte* version = glGetString(GL_VERSION); // version as a string
+    printf("Renderer: %s\n", renderer);
+    printf("OpenGL version supported %s\n", version);
+
+    //initialize particle system
+    const int numParticles = 50;
 
     std::vector<Particle> particles(numParticles);
 	
@@ -225,7 +247,7 @@ int main(int argc, char ** argv)
 	//GLuint vertexbuffer_player;
 	//glGenBuffer
 
-    GL(glViewport(0, 0, width, height));
+   setupViewport(window, P);
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
     GL(glDisable(GL_DEPTH_TEST));
     GL(glEnable(GL_BLEND));
@@ -308,4 +330,14 @@ int main(int argc, char ** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+}
+
+void setupViewport(GLFWwindow *window, GLfloat *P) {
+	int width, height;
+
+	glfwGetWindowSize(window, &width, &height);
+
+	P[0] = P[5] * height / width;
+
+	glViewport(0, 0, width, height);
 }

@@ -1,7 +1,7 @@
-#version 130
+#version 330 core
 
-varying vec3 pos;
-varying vec2 tex;
+in vec3 pos;
+in vec2 tex;
 
 void main()
 {
