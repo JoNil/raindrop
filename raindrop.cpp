@@ -292,7 +292,8 @@ int main(int argc, char ** argv)
     GL(glEnableVertexAttribArray(1));
     GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
     
-    Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
+    Shader raindropShader;
+    raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom");
     Shader background_shader("shader/background.vert", "shader/background.frag");
 
     GLuint QUAD_VAO;
