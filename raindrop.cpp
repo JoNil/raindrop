@@ -254,8 +254,7 @@ int main(int argc, char ** argv)
     GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
     
     Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
-    
-    GL(glUseProgram(shader.programID));
+    Shader backgroundShader("shader/background.vert", "shader/background.frag");
 
     GLuint QUAD_VAO;
     GLuint QUAD_VERT_VBO;
@@ -277,8 +276,8 @@ int main(int argc, char ** argv)
     while (!glfwWindowShouldClose(window)) {
 
         oldTime = newTime;
-	newTime = glfwGetTime();
-	float deltaTime = newTime - oldTime;
+        newTime = glfwGetTime();
+        float deltaTime = newTime - oldTime;
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -290,14 +289,16 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleTexs.data(), (int)particles.size());
 
-        //GL(glBindVertexArray(QUAD_VAO));
-        //GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+        GL(glUseProgram(backgroundShader.programID));
+        GL(glBindVertexArray(QUAD_VAO));
+        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
 
+        GL(glUseProgram(shader.programID));
         GL(glBindVertexArray(VAO));
 		GL(glDrawArrays(GL_QUADS, 0, (numParticles+1)*4));
 
