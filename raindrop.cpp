@@ -44,33 +44,50 @@ struct Particle {
 Particle player;
 
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *texs, int offset) {
-	vertices[offset*12 + 0] = -particle.size / 2 + particle.pos.x;
-	vertices[offset*12 + 1] = -particle.size / 2 + particle.pos.y; 
-	vertices[offset*12 + 2] = 0.0f;
+	vertices[offset*18 + 0] = -particle.size / 2 + particle.pos.x;
+	vertices[offset*18 + 1] = -particle.size / 2 + particle.pos.y; 
+	vertices[offset*18 + 2] = 0.0f;
 
-	vertices[offset*12 + 3] = particle.size / 2 + particle.pos.x;
-	vertices[offset*12 + 4] = -particle.size / 2 + particle.pos.y;
-	vertices[offset*12 + 5] = 0.0f;
+	vertices[offset*18 + 3] = particle.size / 2 + particle.pos.x;
+	vertices[offset*18 + 4] = -particle.size / 2 + particle.pos.y;
+	vertices[offset*18 + 5] = 0.0f;
 
-	vertices[offset*12 + 6] = particle.size / 2 + particle.pos.x;
-	vertices[offset*12 + 7] = particle.size / 2 + particle.pos.y;
-	vertices[offset*12 + 8] = 0.0f;
+    vertices[offset*18 + 6] = particle.size / 2 + particle.pos.x;
+    vertices[offset*18 + 7] = particle.size / 2 + particle.pos.y;
+    vertices[offset*18 + 8] = 0.0f;
 
-	vertices[offset*12 + 9] = -particle.size / 2 + particle.pos.x;
-	vertices[offset*12 + 10] = particle.size / 2 + particle.pos.y;
-	vertices[offset*12 + 11] = 0.0f;
+    
+    vertices[offset*18 + 9] = -particle.size / 2 + particle.pos.x;
+    vertices[offset*18 + 10] = -particle.size / 2 + particle.pos.y; 
+    vertices[offset*18 + 11] = 0.0f;
 
-    texs[offset*8 + 0] = 0.0f;
-    texs[offset*8 + 1] = 0.0f;
+	vertices[offset*18 + 12] = particle.size / 2 + particle.pos.x;
+	vertices[offset*18 + 13] = particle.size / 2 + particle.pos.y;
+	vertices[offset*18 + 14] = 0.0f;
 
-    texs[offset*8 + 2] = 1.0f;
-    texs[offset*8 + 3] = 0.0f;
+	vertices[offset*18 + 15] = -particle.size / 2 + particle.pos.x;
+	vertices[offset*18 + 16] = particle.size / 2 + particle.pos.y;
+	vertices[offset*18 + 17] = 0.0f;
 
-    texs[offset*8 + 4] = 1.0f;
-    texs[offset*8 + 5] = 1.0f;
 
-    texs[offset*8 + 6] = 0.0f;
-    texs[offset*8 + 7] = 1.0f;
+    texs[offset*12 + 0] = 0.0f;
+    texs[offset*12 + 1] = 0.0f;
+
+    texs[offset*12 + 2] = 1.0f;
+    texs[offset*12 + 3] = 0.0f;
+
+    texs[offset*12 + 4] = 1.0f;
+    texs[offset*12 + 5] = 1.0f;
+
+
+    texs[offset*12 + 6] = 0.0f;
+    texs[offset*12 + 7] = 0.0f;
+
+    texs[offset*12 + 8] = 1.0f;
+    texs[offset*12 + 9] = 1.0f;
+
+    texs[offset*12 + 10] = 0.0f;
+    texs[offset*12 + 11] = 1.0f;
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -240,8 +257,8 @@ int main(int argc, char ** argv)
     GLuint VAO;
     GLuint POS_VBO;
     GLuint TEX_VBO;
-    std::vector<GLfloat> particleVertices((numParticles + 1) * 12);
-    std::vector<GLfloat> particleTexs((numParticles + 1) * 8);
+    std::vector<GLfloat> particleVertices((numParticles + 1) * 18);
+    std::vector<GLfloat> particleTexs((numParticles + 1) * 12);
     GL(glGenVertexArrays(1, &VAO));
     GL(glBindVertexArray(VAO));
     GL(glGenBuffers(1, &POS_VBO));
@@ -303,7 +320,7 @@ int main(int argc, char ** argv)
 
         GL(glUseProgram(shader.programID));
         GL(glBindVertexArray(VAO));
-		GL(glDrawArrays(GL_QUADS, 0, (numParticles+1)*4));
+		GL(glDrawArrays(GL_TRIANGLES, 0, (numParticles+1)*4));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
