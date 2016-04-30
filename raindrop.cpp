@@ -93,6 +93,8 @@ struct Particle {
 	float size = 0.1;
 };
 
+//ett spår är som en tunn linje mellan olika droppar. Så man kan ha dropppunkter med olika storlekar som definierar spåret. man uppdaterar spåren genom att lägga till, ta bort och ändra storlek på droppunkterna.
+
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *texs, int offset) {
 	vertices[offset*12 + 0] = -particle.size / 2 + particle.pos.x;
 	vertices[offset*12 + 1] = -particle.size / 2 + particle.pos.y; 
@@ -132,29 +134,38 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 void simulate_particles(Particle * particles, int particle_count, float dt)
 {
+	int type;
     for (int i = 0; i < particle_count; ++i) {
+		if (particles[i].pos.y < -1)
+			particles[i].pos.y = 1;
+		if (particles[i].pos.x < -1)
+			particles[i].pos.x = 1;
+
 		//RAND_MAX = 32767
-		if (-0.55 < particles[i].pos.y && particles[i].pos.y < -0.45 && -0.05 < particles[i].pos.x && particles[i].pos.x < 0.05)
+		type = std::rand() % 10;
+		if (type < 2)
 		{
-			particles[i].speed.y = (float)(std::rand() % 1000 ) / 500.0f;
-			particles[i].speed.x = (float)(std::rand() % 1800 - 900) / 2000.0f;
-			particles[i].acc.x = 0;
-			particles[i].acc.y = 0;
+			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
+			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
 		}
-		else
+		else if (type < 3)
 		{
-			particles[i].acc.y = -1.5;
-			if (particles[i].pos.y < -0.5)
-			{
-				particles[i].acc.y = -(particles[i].pos.y + 0.5) * 20;
-				if (particles[i].pos.x < -0.02 || 0.02 < particles[i].pos.x)
-					particles[i].acc.x = -particles[i].pos.x * 20;
-				else
-					particles[i].speed.x = 0;
-			}
+			particles[i].acc.y = -(float)(std::rand() % 10) / 200.0f;
+			particles[i].acc.x = -(float)(std::rand() % 10) / 200.0f;
 		}
+		else if (type < 6)
+		{
+			particles[i].speed.y = -(float)(std::rand() % 10) / 100.0f;
+			particles[i].speed.x = -(float)(std::rand() % 10) / 100.0f;
+		}
+		else 
+		{
+			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
+			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
+		}
+
 		particles[i].speed += particles[i].acc * dt;
-        particles[i].pos += particles[i].speed * dt;		
+		particles[i].pos += particles[i].speed * dt;
     }
 }
 
@@ -180,12 +191,15 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-	const int numParticles = 1000;
+	const int numParticles = 10;
     std::vector<Particle> particles(numParticles);
-
+	
     for (int i = 0; i < (int)particles.size(); ++i) {
-		particles[i].pos.x = 0;
-		particles[i].pos.y = (float)(std::rand() % 2000 - 500) / 1000.0f;// -0.5;
+		//particles[i].pos.x = 0;
+		//particles[i].pos.y = (float)(std::rand() % 2000 - 500) / 1000.0f;// -0.5;
+
+		particles[i].pos.x = i*0.2 - 1;
+		particles[i].pos.y = 0;
     }
 
     GL(glViewport(0, 0, width, height));
