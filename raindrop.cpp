@@ -147,6 +147,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 void simulate_particles(Particle * particles, int particle_count, float dt)
 {
 	int type;
+	
 	for (int i = 0; i < particle_count; ++i) {
 		if (particles[i].pos.y < -1)
 			particles[i].pos.y = 1;
@@ -154,26 +155,27 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 			particles[i].pos.x = 1;
 
 		//RAND_MAX = 32767
-		type = std::rand() % 10;
-		if (type < 2)
+		type = std::rand() % 100;
+		if (type < 1)
+		{
+			particles[i].acc.y = -(float)(std::rand() % 100) / 2.0f;
+			particles[i].acc.x = -(float)(std::rand() % 100) / 2.0f;
+		}
+
+		if (i < particle_count/4)
 		{
 			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
 			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
 		}
-		else if (type < 3)
-		{
-			particles[i].acc.y = -(float)(std::rand() % 10) / 200.0f;
-			particles[i].acc.x = -(float)(std::rand() % 10) / 200.0f;
-		}
-		else if (type < 6)
+		else if (i < particle_count/2)
 		{
 			particles[i].speed.y = -(float)(std::rand() % 10) / 100.0f;
 			particles[i].speed.x = -(float)(std::rand() % 10) / 100.0f;
 		}
 		else
 		{
-			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
-			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
+			particles[i].speed.y = 0;
+			particles[i].speed.x = 0;
 		}
 
 		particles[i].speed += particles[i].acc * dt;
@@ -204,15 +206,18 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-	const int numParticles = 1000;
+	const int numParticles = 30;
     std::vector<Particle> particles(numParticles);
 
     for (int i = 0; i < (int)particles.size(); ++i) {
 		//particles[i].pos.x = 0;
 		//particles[i].pos.y = (float)(std::rand() % 2000 - 500) / 1000.0f;// -0.5;
 
-		particles[i].pos.x = i*0.2 - 1;
-		particles[i].pos.y = 0;
+		//particles[i].pos.x = i*0.2 - 1;
+		//particles[i].pos.y = 0;
+
+		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
+		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
     }
 
     GL(glViewport(0, 0, width, height));
