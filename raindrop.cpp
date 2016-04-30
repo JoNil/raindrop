@@ -269,7 +269,7 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        //simulate_particles(particles.data(), particles.size(), deltaTime);
+        simulate_particles(particles.data(), particles.size(), deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
             updateParticles(particles[i], particleVertices.data(), particleTexs.data(), i);	
@@ -277,8 +277,8 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleTexs.data(), (int)particles.size());
 
-        GL(glBindVertexArray(QUAD_VAO));
-        GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+        //GL(glBindVertexArray(QUAD_VAO));
+        //GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
