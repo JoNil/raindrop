@@ -220,14 +220,7 @@ int main(int argc, char ** argv)
 
     int status = 0;
 
-    float oldTime = 0;
-    float newTime = glfwGetTime();
-
-    GLuint POS_VBO;
-
-    GL(glUseProgram(shader_program));
-
-    load_background("background.jpg");
+    //load_background("background.jpg");
 
     float oldTime = 0;
     float newTime = glfwGetTime();

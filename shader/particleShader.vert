@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 
 attribute vec3 vertex_pos;
 attribute vec2 vertex_tex;
