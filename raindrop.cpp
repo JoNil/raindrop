@@ -45,51 +45,11 @@ struct Particle {
 
 Particle player;
 
-void updateParticles(Particle particle, GLfloat *vertices, GLfloat *texs, int offset) {
-	vertices[offset*18 + 0] = -particle.size / 2 + particle.pos.x;
-	vertices[offset*18 + 1] = -particle.size / 2 + particle.pos.y; 
-	vertices[offset*18 + 2] = 0.0f;
+void updateParticles(Particle particle, GLfloat *vertices, GLfloat *sizes, int offset) {
+	vertices[offset*2 + 0] = particle.pos.x;
+	vertices[offset*2 + 1] = particle.pos.y; 
 
-	vertices[offset*18 + 3] = particle.size / 2 + particle.pos.x;
-	vertices[offset*18 + 4] = -particle.size / 2 + particle.pos.y;
-	vertices[offset*18 + 5] = 0.0f;
-
-    vertices[offset*18 + 6] = particle.size / 2 + particle.pos.x;
-    vertices[offset*18 + 7] = particle.size / 2 + particle.pos.y;
-    vertices[offset*18 + 8] = 0.0f;
-
-    
-    vertices[offset*18 + 9] = -particle.size / 2 + particle.pos.x;
-    vertices[offset*18 + 10] = -particle.size / 2 + particle.pos.y; 
-    vertices[offset*18 + 11] = 0.0f;
-
-	vertices[offset*18 + 12] = particle.size / 2 + particle.pos.x;
-	vertices[offset*18 + 13] = particle.size / 2 + particle.pos.y;
-	vertices[offset*18 + 14] = 0.0f;
-
-	vertices[offset*18 + 15] = -particle.size / 2 + particle.pos.x;
-	vertices[offset*18 + 16] = particle.size / 2 + particle.pos.y;
-	vertices[offset*18 + 17] = 0.0f;
-
-
-    texs[offset*12 + 0] = 0.0f;
-    texs[offset*12 + 1] = 0.0f;
-
-    texs[offset*12 + 2] = 1.0f;
-    texs[offset*12 + 3] = 0.0f;
-
-    texs[offset*12 + 4] = 1.0f;
-    texs[offset*12 + 5] = 1.0f;
-
-
-    texs[offset*12 + 6] = 0.0f;
-    texs[offset*12 + 7] = 0.0f;
-
-    texs[offset*12 + 8] = 1.0f;
-    texs[offset*12 + 9] = 1.0f;
-
-    texs[offset*12 + 10] = 0.0f;
-    texs[offset*12 + 11] = 1.0f;
+	sizes[offset] = particle.size;
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -278,19 +238,19 @@ int main(int argc, char ** argv)
 
     GLuint VAO;
     GLuint POS_VBO;
-    GLuint TEX_VBO;
-    std::vector<GLfloat> particleVertices((numParticles + 1) * 18);
-    std::vector<GLfloat> particleTexs((numParticles + 1) * 12);
+    GLuint SIZE_VBO;
+    std::vector<GLfloat> particleVertices((numParticles + 1) * 2);
+    std::vector<GLfloat> particleSize((numParticles + 1) * 1);
     GL(glGenVertexArrays(1, &VAO));
     GL(glBindVertexArray(VAO));
     GL(glGenBuffers(1, &POS_VBO));
-    GL(glGenBuffers(1, &TEX_VBO));
+    GL(glGenBuffers(1, &SIZE_VBO));
     GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
     GL(glEnableVertexAttribArray(0));
-    GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0));
-    GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
+    GL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+    GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
     GL(glEnableVertexAttribArray(1));
-    GL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
+    GL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(GLfloat), (GLvoid*)0));
     
     Shader shader("shader/particleShader.vert", "shader/particleShader.frag");
     Shader background_shader("shader/background.vert", "shader/background.frag");
@@ -323,10 +283,10 @@ int main(int argc, char ** argv)
         simulate_particles(particles.data(), particles.size(), deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
-            updateParticles(particles[i], particleVertices.data(), particleTexs.data(), i);	
+            updateParticles(particles[i], particleVertices.data(), particleSize.data(), i);	
         }
 
-		updateParticles(player, particleVertices.data(), particleTexs.data(), (int)particles.size());
+		updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
 
         GL(glUseProgram(background_shader.programID));
         GL(glBindTexture(GL_TEXTURE_2D, background_tex));
@@ -337,8 +297,8 @@ int main(int argc, char ** argv)
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
 		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
-        GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
-        GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
+        GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
+        GL(glBufferData(GL_ARRAY_BUFFER, particleSize.size() * 4, particleSize.data(), GL_STATIC_DRAW));
 
         GL(glUseProgram(shader.programID));
         GL(glBindVertexArray(VAO));
