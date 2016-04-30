@@ -39,6 +39,8 @@ struct Particle {
 	float size = 0.1;
 };
 
+Particle player;
+
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *texs, int offset) {
 	vertices[offset*12 + 0] = -particle.size / 2 + particle.pos.x;
 	vertices[offset*12 + 1] = -particle.size / 2 + particle.pos.y; 
@@ -77,15 +79,19 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 	if (key == GLFW_KEY_UP && action == GLFW_PRESS){
 		std::cout << "up\n";
+		player.pos.y += 0.1;
 		//position += direction * deltaTime * speed;
 	}
 	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS){
+		player.pos.y += -0.1;
 		//position -= direction * deltaTime * speed;
 	}
 	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS){
+		player.pos.x += 0.1;
 		//position += right * deltaTime * speed;
 	}
 	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS){
+		player.pos.x += -0.1;
 		//position -= right * deltaTime * speed;
 	}
 }
@@ -189,6 +195,7 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
+	//initialize particle system
 	const int numParticles = 1000;
     std::vector<Particle> particles(numParticles);
 
@@ -196,6 +203,14 @@ int main(int argc, char ** argv)
 		particles[i].pos.x = 0;
 		particles[i].pos.y = (float)(std::rand() % 2000 - 500) / 1000.0f;// -0.5;
     }
+
+	//init player particle
+	player.pos.x = 0;
+	player.pos.y = 0;
+	player.size = 0.5;
+
+	//GLuint vertexbuffer_player;
+	//glGenBuffer
 
     GL(glViewport(0, 0, width, height));
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
@@ -220,9 +235,8 @@ int main(int argc, char ** argv)
     GLuint VAO;
     GLuint POS_VBO;
     GLuint TEX_VBO;
-    std::vector<GLfloat> particleVertices(numParticles * 12);
-    std::vector<GLfloat> particleTexs(numParticles * 8);
-    GL(glGenBuffers(1, &POS_VBO));
+    std::vector<GLfloat> particleVertices((numParticles + 1) * 12);
+    std::vector<GLfloat> particleTexs((numParticles + 1) * 8);
     GL(glGenVertexArrays(1, &VAO));
     GL(glBindVertexArray(VAO));
     GL(glGenBuffers(1, &POS_VBO));
@@ -263,24 +277,24 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        simulate_particles(particles.data(), particles.size(), deltaTime);
+        //simulate_particles(particles.data(), particles.size(), deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
             updateParticles(particles[i], particleVertices.data(), particleTexs.data(), i);	
         }
 
+		updateParticles(player, particleVertices.data(), particleTexs.data(), (int)particles.size());
+
         GL(glBindVertexArray(QUAD_VAO));
         GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
-	GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
+		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, TEX_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleTexs.size() * 4, particleTexs.data(), GL_STATIC_DRAW));
 
-	GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
-
         GL(glBindVertexArray(VAO));
-        GL(glDrawArrays(GL_QUADS, 0, numParticles*4));
+		GL(glDrawArrays(GL_QUADS, 0, (numParticles+1)*4));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
