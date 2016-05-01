@@ -5,9 +5,11 @@ layout(location = 1) in float size;
 
 out float pSize;
 
+uniform mat4 MVP;
+
 void main() {
 
     pSize = size;
 
-    gl_Position = vec4(vertex_pos, 0.0, 1.0);
+    gl_Position = MVP * vec4(vertex_pos, 0.0, 1.0);
 }

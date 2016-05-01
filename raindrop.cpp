@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/vec2.hpp>
+#include <glm/glm.hpp>
 
 #include "common/Shader.h"
 
@@ -54,26 +54,22 @@ void updateParticles(Particle particle, GLfloat *vertices, GLfloat *sizes, int o
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
+	float speed = 0.1;
 	if (key == GLFW_KEY_UP && action == GLFW_PRESS){
-		std::cout << "up\n";
-		player.pos.y += 0.1;
-		//position += direction * deltaTime * speed;
+		player.pos.y += speed;
 	}
 	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS){
-		player.pos.y += -0.1;
-		//position -= direction * deltaTime * speed;
+		player.pos.y += -speed;
 	}
 	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS){
-		player.pos.x += 0.1;
-		//position += right * deltaTime * speed;
+		player.pos.x += speed;
 	}
 	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS){
-		player.pos.x += -0.1;
-		//position -= right * deltaTime * speed;
+		player.pos.x += -speed;
 	}
 }
 
@@ -127,20 +123,25 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 		{
 			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
 			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
+			particles[i].size = 0.1;
 		}
 		else if (i < particle_count/2)
 		{
 			particles[i].speed.y = -(float)(std::rand() % 10) / 100.0f;
 			particles[i].speed.x = -(float)(std::rand() % 10) / 100.0f;
+			particles[i].size = 0.08;
 		}
 		else
 		{
 			particles[i].speed.y = 0;
 			particles[i].speed.x = 0;
+			particles[i].size = 0.05;
 		}
 
 		particles[i].speed += particles[i].acc * dt;
 		particles[i].pos += particles[i].speed * dt;
+
+		//set size depending on speed, should be set speed depending on size
 	}
 }
 
@@ -194,7 +195,8 @@ int main(int argc, char ** argv)
         glfwTerminate();
         return 1;
     }
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
+	glfwSetKeyCallback(window, key_callback);
 
     //start GLEW extension handler
     glewExperimental = GL_TRUE;
@@ -213,13 +215,13 @@ int main(int argc, char ** argv)
 	
     for (int i = 0; i < (int)particles.size(); ++i) {
 		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
+		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1; 
     }
 
 	//init player particle
 	player.pos.x = 0;
 	player.pos.y = 0;
-	player.size = 0.5;
+	player.size = 0.1;
 
 	//GLuint vertexbuffer_player;
 	//glGenBuffer
@@ -253,7 +255,9 @@ int main(int argc, char ** argv)
     GL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(GLfloat), (GLvoid*)0));
     
     Shader raindropShader;
-    raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom");
+	raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom"); 
+	GLuint MVPID = glGetUniformLocation(raindropShader.programID, "MVP");
+
     Shader background_shader("shader/background.vert", "shader/background.frag");
 
     GLuint QUAD_VAO;
@@ -289,6 +293,10 @@ int main(int argc, char ** argv)
 
 		updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
 
+		glm::mat4 mvp = glm::mat4(1.0f);
+		mvp[3][0] = -player.pos.x;
+		mvp[3][1] = -player.pos.y;
+
         GL(glUseProgram(background_shader.programID));
         GL(glBindTexture(GL_TEXTURE_2D, background_tex));
         GL(glActiveTexture(GL_TEXTURE0));
@@ -301,9 +309,12 @@ int main(int argc, char ** argv)
         GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleSize.size() * 4, particleSize.data(), GL_STATIC_DRAW));
 
-        GL(glUseProgram(raindropShader.programID));
+		GL(glUseProgram(raindropShader.programID));
+
+		glUniformMatrix4fv(MVPID, 1, GL_FALSE, &mvp[0][0]);
+
         GL(glBindVertexArray(VAO));
-		GL(glDrawArrays(GL_POINTS, 0, numParticles));
+		GL(glDrawArrays(GL_POINTS, 0, numParticles + 1));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
