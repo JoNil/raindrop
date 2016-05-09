@@ -132,16 +132,28 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 			//this particle was absorbed or reached the boundary
 			//and should be reinitialized
 
-			//        ______
+            //        ______
             //       /      |
             //    /  |   1  |
             // /___2_|______|
             // |     | 3   /
             // |  G  |   /
             // |_____|/
-			if ((float)(std::rand() % 2) > 1){
+			if ((float)(std::rand() % 2) >= 1){
 				particles[i].pos.x = (float)(std::rand() % 200) / 100.0f + 1;
 				particles[i].pos.y = (float)(std::rand() % 200) / 100.0f + 1;
+			}
+			else
+			{
+				particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
+				particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
+
+				if (particles[i].pos.y > particles[i].pos.x) {
+					particles[i].pos.x += 2.0f;
+				}
+				else {
+					particles[i].pos.y += 2.0f;
+				}
 			}
 			particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
 
