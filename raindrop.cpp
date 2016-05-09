@@ -119,25 +119,8 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 			particles[i].acc.x = -(float)(std::rand() % 100) / 2.0f;
 		}
 
-		if (i < particle_count/4)
-		{
-			particles[i].speed.y = -(float)(std::rand() % 10) / 15.0f;
-			particles[i].speed.x = -(float)(std::rand() % 10) / 15.0f;
-			particles[i].size = 0.1;
-		}
-		else if (i < particle_count/2)
-		{
-			particles[i].speed.y = -(float)(std::rand() % 10) / 100.0f;
-			particles[i].speed.x = -(float)(std::rand() % 10) / 100.0f;
-			particles[i].size = 0.08;
-		}
-		else
-		{
-			particles[i].speed.y = 0;
-			particles[i].speed.x = 0;
-			particles[i].size = 0.05;
-		}
-
+		particles[i].speed.x = -particles[i].size;
+		particles[i].speed.y = -particles[i].size;
 		particles[i].speed += particles[i].acc * dt;
 		particles[i].pos += particles[i].speed * dt;
 
@@ -215,7 +198,8 @@ int main(int argc, char ** argv)
 	
     for (int i = 0; i < (int)particles.size(); ++i) {
 		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1; 
+		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
+		particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
     }
 
 	//init player particle
