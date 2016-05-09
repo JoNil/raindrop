@@ -300,6 +300,7 @@ int main(int argc, char ** argv)
         GL(glUseProgram(background_shader.programID));
         GL(glBindTexture(GL_TEXTURE_2D, background_tex));
         GL(glActiveTexture(GL_TEXTURE0));
+        GL(glUniform2f(glGetUniformLocation(background_shader.programID, "offset"), player.pos.x, player.pos.y));
         GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
         GL(glBindVertexArray(QUAD_VAO));
         GL(glDrawArrays(GL_TRIANGLES, 0, 6));
