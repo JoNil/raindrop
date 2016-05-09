@@ -106,8 +106,11 @@ uint32_t load_background(const char * path)
     return tex_id;
 }
 
-void simulate_particles(Particle * particles, int particle_count, float dt)
+void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 {
+	Particle * particles = particlesIn->data();
+	int particle_count = particlesIn->size();
+
 	int type;
     for (int i = 0; i < particle_count; ++i) {
 		//keep in bounderies around the player
@@ -132,10 +135,22 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 		//collision
 		for (int j = i + 1; j < particle_count; j++)
 		{
-			float dist = (particles[j].pos - particles[i].pos).length();
+			float dist = glm::length(particles[j].pos - particles[i].pos);
+			//std::cout << "dist " << dist << "\n";
 			if (dist < particles[j].size + particles[i].size){
+				//std::cout << "collision\n";
 				//collision detected
-
+				if (particles[j].size <= particles[i].size)
+				{
+					//i absorbes j
+					particles[i].size = sqrt(particles[j].size * particles[j].size + particles[i].size * particles[i].size);
+					particles[j].size = 0;
+				}
+				else{
+					//j absorbes i
+					particles[j].size = sqrt(particles[i].size * particles[i].size + particles[j].size * particles[j].size);
+					particles[i].size = 0;
+				}
 			}
 
 		}
@@ -301,7 +316,7 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		simulate_particles(particles.data(), particles.size(), deltaTime);
+		simulate_particles(&particles, deltaTime);
 		simulate_player(deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
