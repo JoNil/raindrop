@@ -108,11 +108,13 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 {
 	int type;
     for (int i = 0; i < particle_count; ++i) {
+		//keep in bounderies around the player
 		if (particles[i].pos.y < player.pos.y - 2)
 			particles[i].pos.y = player.pos.y + 2;
 		if (particles[i].pos.x < player.pos.x - 2)
 			particles[i].pos.x = player.pos.x + 2;
 
+		//random behavior
 		//RAND_MAX = 32767
 		type = std::rand() % 100;
 		if (type < 1)
@@ -124,6 +126,17 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 		particles[i].speed = particles[i].size * wind;
 		particles[i].speed += particles[i].acc * dt;
 		particles[i].pos += particles[i].speed * dt;
+
+		//collision
+		for (int j = i + 1; j < particle_count; j++)
+		{
+			float dist = (particles[j].pos - particles[i].pos).length();
+			if (dist < particles[j].size + particles[i].size){
+				//collision detected
+
+			}
+
+		}
 	}
 }
 
