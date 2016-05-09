@@ -175,7 +175,7 @@ static float quad_uvs[] = {
 
 int main(int argc, char ** argv)
 {
-    int width = 720;
+    int width = 1024;
     int height = 720;
 
     std::srand(std::time(0));
@@ -190,7 +190,7 @@ int main(int argc, char ** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     //create GLFW window and select context
-    GLFWwindow* window = glfwCreateWindow(640, 480, "raindrop", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "raindrop", NULL, NULL);
     if (!window) {
         fprintf(stderr, "ERROR: could not open window with GLFW3\n");
         glfwTerminate();
