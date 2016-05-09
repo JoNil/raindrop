@@ -38,7 +38,7 @@ struct Particle {
 	vec2 pos;
 	vec2 speed;
 	vec2 acc;
-	float size = 0.1;
+	float size = 0.05;
 };
 
 //ett spår är som en tunn linje mellan olika droppar. Så man kan ha dropppunkter med olika storlekar som definierar spåret. man uppdaterar spåren genom att lägga till, ta bort och ändra storlek på droppunkterna.
@@ -106,10 +106,10 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 {
 	int type;
     for (int i = 0; i < particle_count; ++i) {
-		if (particles[i].pos.y < -1)
-			particles[i].pos.y = 1;
-		if (particles[i].pos.x < -1)
-			particles[i].pos.x = 1;
+		if (particles[i].pos.y < player.pos.y - 2)
+			particles[i].pos.y = player.pos.y + 2;
+		if (particles[i].pos.x < player.pos.x - 2)
+			particles[i].pos.x = player.pos.x + 2;
 
 		//RAND_MAX = 32767
 		type = std::rand() % 100;
@@ -205,7 +205,6 @@ int main(int argc, char ** argv)
 	//init player particle
 	player.pos.x = 0;
 	player.pos.y = 0;
-	player.size = 0.1;
 
 	//GLuint vertexbuffer_player;
 	//glGenBuffer
