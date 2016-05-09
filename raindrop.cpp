@@ -115,9 +115,9 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
     for (int i = 0; i < particle_count; ++i) {
 		//keep in bounderies around the player
 		if (particles[i].pos.y < player.pos.y - 2)
-			particles[i].pos.y = player.pos.y + 2;
-		if (particles[i].pos.x < player.pos.x - 2)
-			particles[i].pos.x = player.pos.x + 2;
+			particles[i].size = 0;
+		else if (particles[i].pos.x < player.pos.x - 2)
+			particles[i].size = 0;
 
 		//random behavior
 		//RAND_MAX = 32767
@@ -126,6 +126,19 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 		{
 			particles[i].acc.y = -(float)(std::rand() % 100) / 2.0f;
 			particles[i].acc.x = -(float)(std::rand() % 100) / 2.0f;
+		}
+
+		if (particles[i].size == 0) {
+			//this particle was absorbed or reached the boundary
+			//and should be reinitialized
+
+			// ASCI
+			if ((float)(std::rand() % 2) > 1){
+				particles[i].pos.x = (float)(std::rand() % 200) / 100.0f + 1;
+				particles[i].pos.y = (float)(std::rand() % 200) / 100.0f + 1;
+			}
+			particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
+
 		}
 
 		particles[i].speed = particles[i].size * wind;
@@ -143,11 +156,13 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 				if (particles[j].size <= particles[i].size)
 				{
 					//i absorbes j
+					//calculate new radius for new area
 					particles[i].size = sqrt(particles[j].size * particles[j].size + particles[i].size * particles[i].size);
 					particles[j].size = 0;
 				}
 				else{
 					//j absorbes i
+					//calculate new radius for new area
 					particles[j].size = sqrt(particles[i].size * particles[i].size + particles[j].size * particles[j].size);
 					particles[i].size = 0;
 				}
@@ -178,6 +193,8 @@ void simulate_player(float dt) {
 
 	player.speed += (player.acc) * dt;
 	player.pos += player.speed * dt;
+
+	//collision
 
 }
 
