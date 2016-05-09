@@ -17,8 +17,6 @@
 
 using namespace glm;
 
-void setupViewport(GLFWwindow *window, GLfloat *P);
-
 void check_gl_error(const char * stmt, const char * fname, int line)
 {
     GLenum err = glGetError();
@@ -73,6 +71,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_RELEASE){
 		right_down = false;
 	}
+}
+
+void resize(GLFWwindow * window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
 
 uint32_t load_background(const char * path)
@@ -173,21 +175,14 @@ static float quad_uvs[] = {
 
 int main(int argc, char ** argv)
 {
-    GLfloat P[16] = { 2.42f, 0.0f, 0.0f, 0.0f,
-                    0.0f, 2.42f, 0.0f, 0.0f,
-                    0.0f, 0.0f, -1.0f, -1.0f,
-                    0.0f, 0.0f, -0.2f, 0.0f };
-
     int width = 720;
     int height = 720;
 
     std::srand(std::time(0));
 
-   //GL INITIALIZATION \___________________________________________
-    // start GLEW extension handler
     if (!glfwInit()) {
-            fprintf(stderr, "ERROR: could not start GLFW3\n");
-            return 1;
+        fprintf(stderr, "ERROR: could not start GLFW3\n");
+        return 1;
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR , 3);
@@ -203,6 +198,7 @@ int main(int argc, char ** argv)
     }
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, resize);
 
     //start GLEW extension handler
     glewExperimental = GL_TRUE;
@@ -233,10 +229,7 @@ int main(int argc, char ** argv)
 	player.size = 0.05;
 	player.speed = player.size * wind;
 
-	//GLuint vertexbuffer_player;
-	//glGenBuffer
-
-   setupViewport(window, P);
+    resize(window, width, height);
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
     GL(glDisable(GL_DEPTH_TEST));
     GL(glEnable(GL_BLEND));
@@ -331,14 +324,4 @@ int main(int argc, char ** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-}
-
-void setupViewport(GLFWwindow *window, GLfloat *P) {
-	int width, height;
-
-	glfwGetWindowSize(window, &width, &height);
-
-	P[0] = P[5] * height / width;
-
-	glViewport(0, 0, width, height);
 }
