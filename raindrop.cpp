@@ -44,6 +44,9 @@ struct Particle {
 //ett spår är som en tunn linje mellan olika droppar. Så man kan ha dropppunkter med olika storlekar som definierar spåret. man uppdaterar spåren genom att lägga till, ta bort och ändra storlek på droppunkterna.
 
 Particle player;
+glm::vec2 wind(-1, -1);
+bool left_down = false;
+bool right_down = false;
 
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *sizes, int offset) {
 	vertices[offset*2 + 0] = particle.pos.x;
@@ -58,18 +61,17 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
-	float speed = 0.1;
-	if (key == GLFW_KEY_UP && action == GLFW_PRESS){
-		player.pos.y += speed;
+	if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action == GLFW_PRESS){
+		left_down = true;
 	}
-	if (key == GLFW_KEY_DOWN && action == GLFW_PRESS){
-		player.pos.y += -speed;
+	if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action == GLFW_RELEASE){
+		left_down = false;
 	}
-	if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS){
-		player.pos.x += speed;
+	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_PRESS){
+		right_down = true;
 	}
-	if (key == GLFW_KEY_LEFT && action == GLFW_PRESS){
-		player.pos.x += -speed;
+	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_RELEASE){
+		right_down = false;
 	}
 }
 
@@ -119,13 +121,34 @@ void simulate_particles(Particle * particles, int particle_count, float dt)
 			particles[i].acc.x = -(float)(std::rand() % 100) / 2.0f;
 		}
 
-		particles[i].speed.x = -particles[i].size;
-		particles[i].speed.y = -particles[i].size;
+		particles[i].speed = particles[i].size * wind;
 		particles[i].speed += particles[i].acc * dt;
 		particles[i].pos += particles[i].speed * dt;
-
-		//set size depending on speed, should be set speed depending on size
 	}
+}
+
+void simulate_player(float dt) {
+
+	//wind
+	player.acc = wind * 0.1f;
+
+	//input
+	float accConst = 0.1;
+	if (left_down){
+		player.acc.x += accConst;
+		player.acc.y -= accConst;
+	}
+	if (right_down) {
+		player.acc.x -= accConst;
+		player.acc.y += accConst;
+	}
+
+	//friction
+	player.acc -= player.speed;
+
+	player.speed += (player.acc) * dt;
+	player.pos += player.speed * dt;
+
 }
 
 static float quad_vertices[] = {
@@ -205,7 +228,10 @@ int main(int argc, char ** argv)
 	//init player particle
 	player.pos.x = 0;
 	player.pos.y = 0;
+	player.acc.x = 0;
+	player.acc.y = 0;
 	player.size = 0.05;
+	player.speed = player.size * wind;
 
 	//GLuint vertexbuffer_player;
 	//glGenBuffer
@@ -270,7 +296,7 @@ int main(int argc, char ** argv)
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		simulate_particles(particles.data(), particles.size(), deltaTime);
-		simulate_particles(&player, 1, deltaTime);
+		simulate_player(deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
             updateParticles(particles[i], particleVertices.data(), particleSize.data(), i);	
