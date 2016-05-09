@@ -38,7 +38,7 @@ struct Particle {
 	vec2 pos;
 	vec2 speed;
 	vec2 acc;
-	float size = 0.05;
+	float size;
 };
 
 //ett spår är som en tunn linje mellan olika droppar. Så man kan ha dropppunkter med olika storlekar som definierar spåret. man uppdaterar spåren genom att lägga till, ta bort och ändra storlek på droppunkterna.
@@ -205,6 +205,7 @@ int main(int argc, char ** argv)
 	//init player particle
 	player.pos.x = 0;
 	player.pos.y = 0;
+	player.size = 0.05;
 
 	//GLuint vertexbuffer_player;
 	//glGenBuffer
@@ -268,7 +269,8 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        simulate_particles(particles.data(), particles.size(), deltaTime);
+		simulate_particles(particles.data(), particles.size(), deltaTime);
+		simulate_particles(&player, 1, deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
             updateParticles(particles[i], particleVertices.data(), particleSize.data(), i);	
