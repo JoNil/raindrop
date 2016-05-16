@@ -259,8 +259,8 @@ int main(int argc, char ** argv)
         glfwTerminate();
         return 1;
     }
-	glfwMakeContextCurrent(window);
-	glfwSetKeyCallback(window, key_callback);
+    glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, resize);
 
     //start GLEW extension handler
@@ -284,13 +284,13 @@ int main(int argc, char ** argv)
 		particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
     }
 
-	//init player particle
-	player.pos.x = 0;
-	player.pos.y = 0;
-	player.acc.x = 0;
-	player.acc.y = 0;
-	player.size = 0.05;
-	player.speed = player.size * wind;
+    //init player particle
+    player.pos.x = 0;
+    player.pos.y = 0;
+    player.acc.x = 0;
+    player.acc.y = 0;
+    player.size = 0.05;
+    player.speed = player.size * wind;
 
     resize(window, width, height);
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
@@ -321,8 +321,8 @@ int main(int argc, char ** argv)
     GL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(GLfloat), (GLvoid*)0));
     
     Shader raindropShader;
-	raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom"); 
-	GLuint MVPID = glGetUniformLocation(raindropShader.programID, "MVP");
+    raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom"); 
+    GLuint MVPID = glGetUniformLocation(raindropShader.programID, "MVP");
 
     Shader background_shader("shader/background.vert", "shader/background.frag");
 
@@ -351,18 +351,18 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		simulate_particles(&particles, deltaTime);
-		simulate_player(deltaTime);
+        simulate_particles(&particles, deltaTime);
+        simulate_player(deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
             updateParticles(particles[i], particleVertices.data(), particleSize.data(), i);	
         }
 
-		updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
+        updateParticles(player, particleVertices.data(), particleSize.data(), (int)particles.size());
 
-		glm::mat4 mvp = glm::mat4(1.0f);
-		mvp[3][0] = -player.pos.x;
-		mvp[3][1] = -player.pos.y;
+        glm::mat4 mvp = glm::mat4(1.0f);
+        mvp[3][0] = -player.pos.x;
+        mvp[3][1] = -player.pos.y;
 
         GL(glUseProgram(background_shader.programID));
         GL(glBindTexture(GL_TEXTURE_2D, background_tex));
@@ -373,16 +373,16 @@ int main(int argc, char ** argv)
         GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
-		GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
+        GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_STATIC_DRAW));
         GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleSize.size() * 4, particleSize.data(), GL_STATIC_DRAW));
 
-		GL(glUseProgram(raindropShader.programID));
+        GL(glUseProgram(raindropShader.programID));
 
-		glUniformMatrix4fv(MVPID, 1, GL_FALSE, &mvp[0][0]);
+        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &mvp[0][0]);
 
         GL(glBindVertexArray(VAO));
-		GL(glDrawArrays(GL_POINTS, 0, numParticles + 1));
+        GL(glDrawArrays(GL_POINTS, 0, numParticles + 1));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
