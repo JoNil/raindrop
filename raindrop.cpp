@@ -60,16 +60,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	}
 
 	if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action == GLFW_PRESS){
-		left_down = true;
-	}
-	if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action == GLFW_RELEASE){
-		left_down = false;
-	}
-	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_PRESS){
 		right_down = true;
 	}
-	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_RELEASE){
+	if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action == GLFW_RELEASE){
 		right_down = false;
+	}
+	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_PRESS){
+		left_down = true;
+	}
+	if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_A) && action == GLFW_RELEASE){
+		left_down = false;
 	}
 }
 
@@ -193,22 +193,22 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 void simulate_player(float dt) {
 
 	//wind
-	player.acc = wind * 0.1f;
+	player.acc = wind * dt * 3.0f;
 
 	//input
-	float accConst = 0.1;
+	const float accConst = 3.0;
 	if (left_down){
-		player.acc.x += accConst;
-		player.acc.y -= accConst;
+		player.acc.x -= accConst * dt;
+		player.acc.y += accConst * dt;
 	}
 	if (right_down) {
-		player.acc.x -= accConst;
-		player.acc.y += accConst;
+		player.acc.x += accConst * dt;
+		player.acc.y -= accConst * dt;
 	}
 
 	//friction
-	player.acc -= player.speed;
-
+	player.acc -= player.speed * dt;
+        
 	player.speed += (player.acc) * dt;
 	player.pos += player.speed * dt;
 
