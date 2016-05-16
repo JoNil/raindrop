@@ -119,28 +119,30 @@ void particle_collision_response(Particle * a, Particle * b)
     b->size = 0.0f;
 }
 
+void physics_step(Particle * particle, vec2 external_force, float dt)
+{
+    particle->acc = (external_force / (50.0f * sqrtf(particle->size)));
+    particle->acc -= particle->speed;
+    particle->speed += particle->acc * dt;
+    particle->pos += particle->speed * dt;
+}
+
 void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 {
 	Particle * particles = particlesIn->data();
 	int particle_count = particlesIn->size();
 
-	int type;
     for (int i = 0; i < particle_count; ++i) {
-		//keep in bounderies around the player
-		if (particles[i].pos.y < player.pos.y - 2)
+		
+        //keep in bounderies around the player
+		if (particles[i].pos.y < player.pos.y - 2) {
 			particles[i].size = 0;
-		else if (particles[i].pos.x < player.pos.x - 2)
+        }
+		else if (particles[i].pos.x < player.pos.x - 2) {
 			particles[i].size = 0;
+        }
 
-		//random behavior
-		//RAND_MAX = 32767
-		type = std::rand() % 100;
-		if (type < 1)
-		{
-			particles[i].acc.y = -(float)(std::rand() % 100) / 2.0f;
-			particles[i].acc.x = -(float)(std::rand() % 100) / 2.0f;
-		}
-
+        //respawn dead
 		if (particles[i].size == 0) {
 			//this particle was absorbed or reached the boundary
 			//and should be reinitialized
@@ -169,12 +171,10 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 				}
 			}
 			particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
-
 		}
 
-		particles[i].speed = particles[i].size * wind;
-		particles[i].speed += particles[i].acc * dt;
-		particles[i].pos += particles[i].speed * dt;
+        //simulation
+		physics_step(&particles[i], wind, dt);
 
 		//collision
 		for (int j = i + 1; j < particle_count; j++)
@@ -204,26 +204,20 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 void simulate_player(float dt) {
 
 	//wind
-	player.acc = wind * dt * 3.0f;
+	vec2 acc = wind;
 
 	//input
 	const float accConst = 3.0;
 	if (left_down){
-		player.acc.x -= accConst * dt;
-		player.acc.y += accConst * dt;
+		acc.x -= accConst;
+		acc.y += accConst;
 	}
 	if (right_down) {
-		player.acc.x += accConst * dt;
-		player.acc.y -= accConst * dt;
+		acc.x += accConst;
+		acc.y -= accConst;
 	}
 
-	//friction
-	player.acc -= player.speed * dt;
-        
-	player.speed += (player.acc) * dt;
-	player.pos += player.speed * dt;
-
-	//collision
+	physics_step(&player, acc, dt);
 
 }
 
@@ -301,7 +295,7 @@ int main(int argc, char ** argv)
     player.acc.x = 0;
     player.acc.y = 0;
     player.size = 0.05;
-    player.speed = player.size * wind;
+    player.speed = vec2(0.0f, 0.0f);
 
     resize(window, width, height);
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
