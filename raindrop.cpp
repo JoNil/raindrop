@@ -106,6 +106,19 @@ uint32_t load_background(const char * path)
     return tex_id;
 }
 
+void particle_collision_response(Particle * a, Particle * b)
+{
+    float old_size = a->size;
+
+    a->size = sqrt(a->size * a->size + b->size * b->size);
+    a->pos = (old_size * a->pos + b->size * b->pos) / (old_size + b->size);
+    a->speed = (old_size * a->speed + b->size * b->speed) / (old_size + b->size);
+
+    b->pos = vec2(0.0f, 0.0f);
+    b->speed = vec2(0.0f, 0.0f);
+    b->size = 0.0f;
+}
+
 void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 {
 	Particle * particles = particlesIn->data();
@@ -175,14 +188,12 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 				{
 					//i absorbes j
 					//calculate new radius for new area
-					particles[i].size = sqrt(particles[j].size * particles[j].size + particles[i].size * particles[i].size);
-					particles[j].size = 0;
+					particle_collision_response(&particles[i], &particles[j]);
 				}
 				else{
 					//j absorbes i
 					//calculate new radius for new area
-					particles[j].size = sqrt(particles[i].size * particles[i].size + particles[j].size * particles[j].size);
-					particles[i].size = 0;
+					particle_collision_response(&particles[j], &particles[i]);
 				}
 			}
 
