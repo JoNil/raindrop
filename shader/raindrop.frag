@@ -14,7 +14,7 @@ void main()
 {
     vec3 lightDir = normalize(LP - Position);
     vec3 viewDir  = normalize(-Position);
-            
+    
     float lightIntensity = 0.9f/length(lightDir);
     lightDir = normalize(lightDir);
 
