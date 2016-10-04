@@ -4,6 +4,7 @@
 
 #include "common/Shader.h"
 #include "common/Particle.h"
+#include "common/ParticleSystem.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -195,7 +196,6 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 					particle_collision_response(&particles[j], &particles[i]);
 				}
 			}
-
 		}
 	}
 }
@@ -279,14 +279,7 @@ int main(int argc, char ** argv)
 
     //initialize particle system
     const int numParticles = 50;
-
-    std::vector<Particle> particles(numParticles);
-
-    for (int i = 0; i < (int)particles.size(); ++i) {
-		particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i]._size = (float)(std::rand() % 60) / 1000.0f + 0.03;
-    }
+	ParticleSystem particles(numParticles);
 
     //init player particle
     player._pos.x = 0;
@@ -365,14 +358,14 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        simulate_particles(&particles, deltaTime);
+        simulate_particles(&particles._particles, deltaTime);
         simulate_player(deltaTime);
 
-        for (int i = 0; i < (int)particles.size(); ++i) {
-            updateParticles(particles[i], particleVertices.data(), particleSize.data(), particleVel.data(), i);
+        for (int i = 0; i < (int)particles._particles.size(); ++i) {
+            updateParticles(particles._particles[i], particleVertices.data(), particleSize.data(), particleVel.data(), i);
         }
 
-        updateParticles(player, particleVertices.data(), particleSize.data(), particleVel.data(), (int)particles.size());
+        updateParticles(player, particleVertices.data(), particleSize.data(), particleVel.data(), (int)particles._particles.size());
 
         glm::mat4 mvp = glm::mat4(1.0f);
         mvp[3][0] = -player._pos.x;

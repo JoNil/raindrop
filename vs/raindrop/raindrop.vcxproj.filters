@@ -6,12 +6,14 @@
     <ClInclude Include="..\..\common\glfwContext.h" />
     <ClInclude Include="..\..\common\Shader.h" />
     <ClInclude Include="..\..\common\Particle.h" />
+    <ClInclude Include="..\..\common\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\raindrop.cpp" />
     <ClCompile Include="..\..\common\Camera.cpp" />
     <ClCompile Include="..\..\common\glfwContext.cpp" />
     <ClCompile Include="..\..\common\Shader.cpp" />
+    <ClCompile Include="..\..\common\ParticleSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\background.frag" />
