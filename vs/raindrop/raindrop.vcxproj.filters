@@ -5,6 +5,7 @@
     <ClInclude Include="..\..\common\Camera.h" />
     <ClInclude Include="..\..\common\glfwContext.h" />
     <ClInclude Include="..\..\common\Shader.h" />
+    <ClInclude Include="..\..\common\Particle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\raindrop.cpp" />

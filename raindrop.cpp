@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "common/Shader.h"
+#include "common/Particle.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -32,12 +33,7 @@ void check_gl_error(const char * stmt, const char * fname, int line)
     check_gl_error(#stmt, __FILE__, __LINE__); \
 } while (0)
 
-struct Particle {
-	vec2 pos;
-	vec2 speed;
-	vec2 acc;
-	float size;
-};
+
 
 //ett sp�r �r som en tunn linje mellan olika droppar. S� man kan ha dropppunkter med olika storlekar som definierar sp�ret. man uppdaterar sp�ren genom att l�gga till, ta bort och �ndra storlek p� droppunkterna.
 
@@ -47,13 +43,13 @@ bool left_down = false;
 bool right_down = false;
 
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *sizes, GLfloat* vel, int offset) {
-	vertices[offset*2 + 0] = particle.pos.x;
-	vertices[offset*2 + 1] = particle.pos.y;
+	vertices[offset*2 + 0] = particle._pos.x;
+	vertices[offset*2 + 1] = particle._pos.y;
 
-	vel[offset*2 + 0] = particle.speed.x;
-	vel[offset*2 + 1] = particle.speed.y;
+	vel[offset*2 + 0] = particle._speed.x;
+	vel[offset*2 + 1] = particle._speed.y;
 
-	sizes[offset] = particle.size;
+	sizes[offset] = particle._size;
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -109,25 +105,25 @@ uint32_t load_background(const char * path)
     return tex_id;
 }
 
-void particle_collision_response(Particle * a, Particle * b)
+void particle_collision_response(Particle * first, Particle * second)
 {
-    float old_size = a->size;
+    float old_size = first->_size;
 
-    a->size = sqrt(a->size * a->size + b->size * b->size);
-    a->pos = (old_size * a->pos + b->size * b->pos) / (old_size + b->size);
-    a->speed = (old_size * a->speed + b->size * b->speed) / (old_size + b->size);
+    first->_size	= sqrt(first->_size * first->_size + second->_size * second->_size);
+    first->_pos		= (old_size * first->_pos + second->_size * second->_pos) / (old_size + second->_size);
+    first->_speed	= (old_size * first->_speed + second->_size * second->_speed) / (old_size + second->_size);
 
-    b->pos = vec2(0.0f, 0.0f);
-    b->speed = vec2(0.0f, 0.0f);
-    b->size = 0.0f;
+    second->_pos = vec2(0.0f, 0.0f);
+    second->_speed = vec2(0.0f, 0.0f);
+    second->_size = 0.0f;
 }
 
 void physics_step(Particle * particle, vec2 external_force, float dt)
 {
-    particle->acc = (external_force / (50.0f * sqrtf(particle->size)));
-    particle->acc -= particle->speed;
-    particle->speed += particle->acc * dt;
-    particle->pos += particle->speed * dt;
+    particle->_acc = (external_force / (50.0f * sqrtf(particle->_size)));
+    particle->_acc -= particle->_speed;
+    particle->_speed += particle->_acc * dt;
+    particle->_pos += particle->_speed * dt;
 }
 
 void simulate_particles(std::vector<Particle> * particlesIn, float dt)
@@ -138,15 +134,15 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
     for (int i = 0; i < particle_count; ++i) {
 
         //keep in bounderies around the player
-		if (particles[i].pos.y < player.pos.y - 2) {
-			particles[i].size = 0;
+		if (particles[i]._pos.y < player._pos.y - 2) {
+			particles[i]._size = 0;
         }
-		else if (particles[i].pos.x < player.pos.x - 2) {
-			particles[i].size = 0;
+		else if (particles[i]._pos.x < player._pos.x - 2) {
+			particles[i]._size = 0;
         }
 
         //respawn dead
-		if (particles[i].size == 0) {
+		if (particles[i]._size == 0) {
 			//this particle was absorbed or reached the boundary
 			//and should be reinitialized
 
@@ -158,22 +154,22 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
             // |  G  |   /
             // |_____|/
 			if ((float)(std::rand() % 2) >= 1){
-				particles[i].pos.x = (float)(std::rand() % 200) / 100.0f + 1;
-				particles[i].pos.y = (float)(std::rand() % 200) / 100.0f + 1;
+				particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f + 1;
+				particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f + 1;
 			}
 			else
 			{
-				particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-				particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
+				particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f - 1;
+				particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f - 1;
 
-				if (particles[i].pos.y > particles[i].pos.x) {
-					particles[i].pos.x += 2.0f;
+				if (particles[i]._pos.y > particles[i]._pos.x) {
+					particles[i]._pos.x += 2.0f;
 				}
 				else {
-					particles[i].pos.y += 2.0f;
+					particles[i]._pos.y += 2.0f;
 				}
 			}
-			particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
+			particles[i]._size = (float)(std::rand() % 60) / 1000.0f + 0.03;
 		}
 
         //simulation
@@ -182,12 +178,12 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 		//collision
 		for (int j = i + 1; j < particle_count; j++)
 		{
-			float dist = glm::length(particles[j].pos - particles[i].pos);
+			float dist = glm::length(particles[j]._pos - particles[i]._pos);
 			//std::cout << "dist " << dist << "\n";
-			if (dist < particles[j].size + particles[i].size){
+			if (dist < particles[j]._size + particles[i]._size){
 				//std::cout << "collision\n";
 				//collision detected
-				if (particles[j].size <= particles[i].size)
+				if (particles[j]._size <= particles[i]._size)
 				{
 					//i absorbes j
 					//calculate new radius for new area
@@ -287,18 +283,18 @@ int main(int argc, char ** argv)
     std::vector<Particle> particles(numParticles);
 
     for (int i = 0; i < (int)particles.size(); ++i) {
-		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
-		particles[i].size = (float)(std::rand() % 60) / 1000.0f + 0.03;
+		particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f - 1;
+		particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f - 1;
+		particles[i]._size = (float)(std::rand() % 60) / 1000.0f + 0.03;
     }
 
     //init player particle
-    player.pos.x = 0;
-    player.pos.y = 0;
-    player.acc.x = 0;
-    player.acc.y = 0;
-    player.size = 0.05;
-    player.speed = vec2(0.0f, 0.0f);
+    player._pos.x = 0;
+    player._pos.y = 0;
+    player._acc.x = 0;
+    player._acc.y = 0;
+    player._size = 0.05;
+    player._speed = vec2(0.0f, 0.0f);
 
     resize(window, width, height);
     GL(glClearColor(0.0f, 0.0f, 0.2f, 1.0f));
@@ -379,13 +375,13 @@ int main(int argc, char ** argv)
         updateParticles(player, particleVertices.data(), particleSize.data(), particleVel.data(), (int)particles.size());
 
         glm::mat4 mvp = glm::mat4(1.0f);
-        mvp[3][0] = -player.pos.x;
-        mvp[3][1] = -player.pos.y;
+        mvp[3][0] = -player._pos.x;
+        mvp[3][1] = -player._pos.y;
 
         GL(glUseProgram(background_shader.programID));
         GL(glBindTexture(GL_TEXTURE_2D, background_tex));
         GL(glActiveTexture(GL_TEXTURE0));
-        GL(glUniform2f(glGetUniformLocation(background_shader.programID, "offset"), player.pos.x, player.pos.y));
+        GL(glUniform2f(glGetUniformLocation(background_shader.programID, "offset"), player._pos.x, player._pos.y));
         GL(glUniform1i(glGetUniformLocation(background_shader.programID, "tex"), 0));
         GL(glBindVertexArray(QUAD_VAO));
         GL(glDrawArrays(GL_TRIANGLES, 0, 6));
