@@ -121,15 +121,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\Camera.cpp" />
-    <ClCompile Include="..\..\common\glfwContext.cpp" />
+    <ClCompile Include="..\..\common\Particle.cpp" />
     <ClCompile Include="..\..\common\ParticleSystem.cpp" />
     <ClCompile Include="..\..\common\Shader.cpp" />
     <ClCompile Include="..\..\raindrop.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\common\Camera.h" />
-    <ClInclude Include="..\..\common\glfwContext.h" />
     <ClInclude Include="..\..\common\Particle.h" />
     <ClInclude Include="..\..\common\ParticleSystem.h" />
     <ClInclude Include="..\..\common\Shader.h" />

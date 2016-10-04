@@ -106,100 +106,6 @@ uint32_t load_background(const char * path)
     return tex_id;
 }
 
-void particle_collision_response(Particle * first, Particle * second)
-{
-    float old_size = first->_size;
-
-    first->_size	= sqrt(first->_size * first->_size + second->_size * second->_size);
-    first->_pos		= (old_size * first->_pos + second->_size * second->_pos) / (old_size + second->_size);
-    first->_speed	= (old_size * first->_speed + second->_size * second->_speed) / (old_size + second->_size);
-
-    second->_pos = vec2(0.0f, 0.0f);
-    second->_speed = vec2(0.0f, 0.0f);
-    second->_size = 0.0f;
-}
-
-void physics_step(Particle * particle, vec2 external_force, float dt)
-{
-    particle->_acc = (external_force / (50.0f * sqrtf(particle->_size)));
-    particle->_acc -= particle->_speed;
-    particle->_speed += particle->_acc * dt;
-    particle->_pos += particle->_speed * dt;
-}
-
-void simulate_particles(std::vector<Particle> * particlesIn, float dt)
-{
-	Particle * particles = particlesIn->data();
-	int particle_count = particlesIn->size();
-
-    for (int i = 0; i < particle_count; ++i) {
-
-        //keep in bounderies around the player
-		if (particles[i]._pos.y < player._pos.y - 2) {
-			particles[i]._size = 0;
-        }
-		else if (particles[i]._pos.x < player._pos.x - 2) {
-			particles[i]._size = 0;
-        }
-
-        //respawn dead
-		if (particles[i]._size == 0) {
-			//this particle was absorbed or reached the boundary
-			//and should be reinitialized
-
-            //        ______
-            //       /      |
-            //    /  |   1  |
-            // /___2_|______|
-            // |     | 3   /
-            // |  G  |   /
-            // |_____|/
-			if ((float)(std::rand() % 2) >= 1){
-				particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f + 1;
-				particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f + 1;
-			}
-			else
-			{
-				particles[i]._pos.x = (float)(std::rand() % 200) / 100.0f - 1;
-				particles[i]._pos.y = (float)(std::rand() % 200) / 100.0f - 1;
-
-				if (particles[i]._pos.y > particles[i]._pos.x) {
-					particles[i]._pos.x += 2.0f;
-				}
-				else {
-					particles[i]._pos.y += 2.0f;
-				}
-			}
-			particles[i]._size = (float)(std::rand() % 60) / 1000.0f + 0.03;
-		}
-
-        //simulation
-		physics_step(&particles[i], wind, dt);
-
-		//collision
-		for (int j = i + 1; j < particle_count; j++)
-		{
-			float dist = glm::length(particles[j]._pos - particles[i]._pos);
-			//std::cout << "dist " << dist << "\n";
-			if (dist < particles[j]._size + particles[i]._size){
-				//std::cout << "collision\n";
-				//collision detected
-				if (particles[j]._size <= particles[i]._size)
-				{
-					//i absorbes j
-					//calculate new radius for new area
-					particle_collision_response(&particles[i], &particles[j]);
-				}
-				else{
-					//j absorbes i
-					//calculate new radius for new area
-					particle_collision_response(&particles[j], &particles[i]);
-				}
-			}
-		}
-	}
-}
-
 void simulate_player(float dt) {
 
 	//wind
@@ -215,8 +121,7 @@ void simulate_player(float dt) {
 		acc.x += accConst;
 		acc.y -= accConst;
 	}
-
-	physics_step(&player, acc, dt);
+	player.physics_step(acc, dt);
 
 }
 
@@ -279,7 +184,7 @@ int main(int argc, char ** argv)
 
     //initialize particle system
     const int numParticles = 50;
-	ParticleSystem particles(numParticles);
+	ParticleSystem particles(numParticles, &player, wind);
 
     //init player particle
     player._pos.x = 0;
@@ -358,7 +263,7 @@ int main(int argc, char ** argv)
 
         GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        simulate_particles(&particles._particles, deltaTime);
+        particles.simulate_particles(deltaTime);
         simulate_player(deltaTime);
 
         for (int i = 0; i < (int)particles._particles.size(); ++i) {
