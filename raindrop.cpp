@@ -39,7 +39,7 @@ struct Particle {
 	float size;
 };
 
-//ett spår är som en tunn linje mellan olika droppar. Så man kan ha dropppunkter med olika storlekar som definierar spåret. man uppdaterar spåren genom att lägga till, ta bort och ändra storlek på droppunkterna.
+//ett spï¿½r ï¿½r som en tunn linje mellan olika droppar. Sï¿½ man kan ha dropppunkter med olika storlekar som definierar spï¿½ret. man uppdaterar spï¿½ren genom att lï¿½gga till, ta bort och ï¿½ndra storlek pï¿½ droppunkterna.
 
 Particle player;
 glm::vec2 wind(-1, -1);
@@ -49,7 +49,7 @@ bool right_down = false;
 void updateParticles(Particle particle, GLfloat *vertices, GLfloat *sizes, GLfloat* vel, int offset) {
 	vertices[offset*2 + 0] = particle.pos.x;
 	vertices[offset*2 + 1] = particle.pos.y;
-        
+
 	vel[offset*2 + 0] = particle.speed.x;
 	vel[offset*2 + 1] = particle.speed.y;
 
@@ -136,7 +136,7 @@ void simulate_particles(std::vector<Particle> * particlesIn, float dt)
 	int particle_count = particlesIn->size();
 
     for (int i = 0; i < particle_count; ++i) {
-		
+
         //keep in bounderies around the player
 		if (particles[i].pos.y < player.pos.y - 2) {
 			particles[i].size = 0;
@@ -285,7 +285,7 @@ int main(int argc, char ** argv)
     const int numParticles = 50;
 
     std::vector<Particle> particles(numParticles);
-	
+
     for (int i = 0; i < (int)particles.size(); ++i) {
 		particles[i].pos.x = (float)(std::rand() % 200) / 100.0f - 1;
 		particles[i].pos.y = (float)(std::rand() % 200) / 100.0f - 1;
@@ -319,27 +319,27 @@ int main(int argc, char ** argv)
     std::vector<GLfloat> particleVertices((numParticles + 1) * 2);
     std::vector<GLfloat> particleVel((numParticles + 1) * 2);
     std::vector<GLfloat> particleSize((numParticles + 1) * 1);
-    
+
     GL(glGenVertexArrays(1, &VAO));
     GL(glBindVertexArray(VAO));
     GL(glGenBuffers(1, &POS_VBO));
     GL(glGenBuffers(1, &SIZE_VBO));
     GL(glGenBuffers(1, &vel_VBO));
-    
+
     GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
     GL(glEnableVertexAttribArray(0));
     GL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
-    
+
     GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
     GL(glEnableVertexAttribArray(1));
     GL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(GLfloat), (GLvoid*)0));
-    
+
     GL(glBindBuffer(GL_ARRAY_BUFFER, vel_VBO));
     GL(glEnableVertexAttribArray(2));
     GL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0));
-    
+
     Shader raindropShader;
-    raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom"); 
+    raindropShader.createShader("shader/raindrop.vert", "shader/raindrop.frag", "shader/raindrop.geom");
     GLuint MVPID = glGetUniformLocation(raindropShader.programID, "MVP");
 
     Shader background_shader("shader/background.vert", "shader/background.frag");
@@ -373,7 +373,7 @@ int main(int argc, char ** argv)
         simulate_player(deltaTime);
 
         for (int i = 0; i < (int)particles.size(); ++i) {
-            updateParticles(particles[i], particleVertices.data(), particleSize.data(), particleVel.data(), i);	
+            updateParticles(particles[i], particleVertices.data(), particleSize.data(), particleVel.data(), i);
         }
 
         updateParticles(player, particleVertices.data(), particleSize.data(), particleVel.data(), (int)particles.size());
@@ -392,13 +392,13 @@ int main(int argc, char ** argv)
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, POS_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleVertices.size() * 4, particleVertices.data(), GL_DYNAMIC_DRAW));
-        
+
         GL(glBindBuffer(GL_ARRAY_BUFFER, SIZE_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleSize.size() * 4, particleSize.data(), GL_DYNAMIC_DRAW));
 
         GL(glBindBuffer(GL_ARRAY_BUFFER, vel_VBO));
         GL(glBufferData(GL_ARRAY_BUFFER, particleVel.size() * 4, particleVel.data(), GL_DYNAMIC_DRAW));
-        
+
         GL(glUseProgram(raindropShader.programID));
 
         glUniformMatrix4fv(MVPID, 1, GL_FALSE, &mvp[0][0]);
